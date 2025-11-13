@@ -1,0 +1,36 @@
+[tool.poetry]
+name = "ytnd-bot"
+version = "1.0.0"
+description = "YTND Bot - YouTube Downloader with Telegram Integration"
+authors = ["H1ghSyst3m"]
+packages = [{include = "ytnd"}]
+
+[tool.poetry.dependencies]
+python = ">=3.10"
+yt-dlp = ">=2025.10.22"
+mutagen = "^1.47.0"
+python-telegram-bot = "^22.1"
+python-dotenv = "^1.0.0"
+qrcode = {version = "^7.4.2", extras = ["pil"]}
+requests = "^2.32.0"
+# systemd-python is optional but provides better logging integration with journalctl
+anyio = "<4"
+supervisor = "^4.3.0"
+
+[tool.poetry.group.manager]
+optional = true
+
+[tool.poetry.group.manager.dependencies]
+fastapi = "^0.121.0"
+uvicorn = "^0.38.0"
+passlib = {version = "^1.7.4", extras = ["argon2"]}
+python-multipart = "^0.0.20"
+argon2-cffi = "^23.1.0"
+
+[tool.poetry.scripts]
+ytnd-bot = "ytnd.bot:main"
+ytnd-manager = "ytnd.manager_server:run"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
