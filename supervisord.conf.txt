@@ -1,0 +1,36 @@
+# supervisord.conf right now saved as .txt to make it compatible with the ai, will be renamed to supervisord.conf when used
+[supervisord]
+nodaemon=true
+logfile=/dev/null
+logfile_maxbytes=0
+pidfile=/tmp/supervisord.pid
+
+[program:ytnd-bot]
+command=poetry run ytnd-bot
+autostart=true
+autorestart=true
+stopwaitsecs=10
+stdout_logfile=/dev/stdout
+stdout_logfile_maxbytes=0
+stderr_logfile=/dev/stderr
+stderr_logfile_maxbytes=0
+
+[program:ytnd-manager]
+command=poetry run ytnd-manager
+autostart=true
+autorestart=true
+stopwaitsecs=10
+stdout_logfile=/dev/stdout
+stdout_logfile_maxbytes=0
+stderr_logfile=/dev/stderr
+stderr_logfile_maxbytes=0
+
+[program:syncthing]
+command=syncthing --no-browser
+autostart=true
+autorestart=true
+stopwaitsecs=10
+stdout_logfile=/dev/stdout
+stdout_logfile_maxbytes=0
+stderr_logfile=/dev/stderr
+stderr_logfile_maxbytes=0
