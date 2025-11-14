@@ -13,7 +13,6 @@ python-telegram-bot = "^22.1"
 python-dotenv = "^1.0.0"
 qrcode = {version = "^7.4.2", extras = ["pil"]}
 requests = "^2.32.0"
-supervisor = "^4.2.5"
 # systemd-python is optional but provides better logging integration with journalctl
 anyio = "<4"
 
@@ -30,6 +29,7 @@ argon2-cffi = "^23.1.0"
 [tool.poetry.scripts]
 ytnd-bot = "ytnd.bot:main"
 ytnd-manager = "ytnd.manager_server:run"
+ytnd-all = "run:main"
 
 [build-system]
 requires = ["poetry-core"]
