@@ -15,7 +15,6 @@ qrcode = {version = "^7.4.2", extras = ["pil"]}
 requests = "^2.32.0"
 # systemd-python is optional but provides better logging integration with journalctl
 anyio = "<4"
-supervisor = "^4.3.0"
 
 [tool.poetry.group.manager]
 optional = true
@@ -33,4 +32,5 @@ ytnd-manager = "ytnd.manager_server:run"
 
 [build-system]
 requires = ["poetry-core"]
+
 build-backend = "poetry.core.masonry.api"
