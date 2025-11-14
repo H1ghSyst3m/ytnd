@@ -148,11 +148,17 @@ def _make_handlers(app_name: str, log_dir: Path | None, json_mode: bool):
         fh.setFormatter(formatter_json)
         handlers.append(fh)
 
-    if not handlers:
-        sh = logging.StreamHandler()
-        sh.setLevel(logging.INFO)
+    # Always add a StreamHandler to see output on the console.
+    sh = logging.StreamHandler()
+    sh.setLevel(logging.INFO)
+    # Use key-value for console unless JSON is explicitly forced everywhere.
+    if json_mode and not journal_ok:
         sh.setFormatter(formatter_json)
-        handlers.append(sh)
+    else:
+        sh.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(name)s - %(message)s'))
+
+    handlers.append(sh)
+
 
     for handler in handlers:
         handler.addFilter(_ContextFilter())
@@ -164,16 +170,22 @@ def setup_logging(
     level: int = logging.INFO,
     json_mode: bool | None = None,
     log_dir: str | Path | None = None,
+    reinitialize: bool = False,
 ):
     """
     Initializes logging with QueueHandler for thread-safety and performance.
     - app_name: Name/Identifier in Journal and file
     - json_mode: Force via env YTND_LOG_JSON=1. Default is now True for files.
     - log_dir: Path for rotating file (or None to disable)
+    - reinitialize: If True, will force setup again (for child processes).
     """
-    global _LOGGERS_STARTED, _queue_listener, logger
-    if _LOGGERS_STARTED:
+    global _LOGGERS_STARTED, _queue_listener
+    if _LOGGERS_STARTED and not reinitialize:
         return
+    
+    if _queue_listener:
+        _queue_listener.stop()
+        _queue_listener = None
     
     log_dir = log_dir or LOG_DIR
 
@@ -191,7 +203,9 @@ def setup_logging(
 
     _queue_listener = logging.handlers.QueueListener(log_queue, *handlers, respect_handler_level=True)
     _queue_listener.start()
-    atexit.register(lambda: _queue_listener and _queue_listener.stop())
+    
+    if not reinitialize:
+        atexit.register(lambda: _queue_listener and _queue_listener.stop())
 
     logging.getLogger("httpx").setLevel(logging.WARNING)
     logging.getLogger("telegram").setLevel(logging.INFO)

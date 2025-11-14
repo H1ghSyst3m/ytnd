@@ -1093,7 +1093,7 @@ else:
 
 def run():
     import uvicorn
-    uvicorn.run(app, host=MANAGER_HOST, port=MANAGER_PORT)
+    uvicorn.run(app, host=MANAGER_HOST, port=MANAGER_PORT, log_config=None)
 
 if __name__ == "__main__":
     run()

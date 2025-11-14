@@ -11,41 +11,42 @@ import signal
 import time
 import shutil
 import os
+import sys
 from pathlib import Path
 
-# Set a custom environment variable to indicate this is the main process
-# This helps avoid circular imports or re-initialization issues.
-os.environ["YTND_MAIN_RUNNER"] = "1"
+# Add project root to path to ensure 'ytnd' can be imported
+sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from ytnd.bot import main as bot_main
-from ytnd.manager_server import run as manager_run
-from ytnd.utils import logger
+from ytnd.utils import logger, setup_logging
 
-# --- Configuration ---
-# Attempt to find the syncthing executable
-SYNCTHING_EXECUTABLE = shutil.which("syncthing")
-# Log file for syncthing subprocess
-SYNCTHING_LOG_FILE = Path(os.getenv("LOG_DIR", "./data/logs")) / "syncthing.log"
+
+def reinit_logging():
+    """Re-initialize logging for a child process."""
+    setup_logging(reinitialize=True)
 
 
 def run_bot():
     """Wrapper function to run the bot."""
+    reinit_logging()
     logger.info("Starting Telegram bot process...")
     try:
+        from ytnd.bot import main as bot_main
         bot_main()
     except Exception as e:
-        logger.error("Telegram bot process failed: %s", e)
+        logger.error("Telegram bot process failed: %s", e, exc_info=True)
         # Force exit to notify the main process
         os._exit(1)
 
 
 def run_manager():
     """Wrapper function to run the FastAPI manager server."""
+    reinit_logging()
     logger.info("Starting manager server process...")
     try:
+        from ytnd.manager_server import run as manager_run
         manager_run()
     except Exception as e:
-        logger.error("Manager server process failed: %s", e)
+        logger.error("Manager server process failed: %s", e, exc_info=True)
         os._exit(1)
 
 
@@ -53,6 +54,10 @@ def main():
     """
     Main function to orchestrate the startup of all services.
     """
+    # --- Configuration ---
+    SYNCTHING_EXECUTABLE = shutil.which("syncthing")
+    SYNCTHING_LOG_FILE = Path(os.getenv("LOG_DIR", "data/logs")) / "syncthing.log"
+    
     if not SYNCTHING_EXECUTABLE:
         logger.error(
             "FATAL: `syncthing` executable not found in PATH. "
@@ -136,10 +141,11 @@ def main():
     except (KeyboardInterrupt, SystemExit):
         logger.info("Main process interrupted. Initiating shutdown...")
     except Exception as e:
-        logger.error(f"A critical error occurred in the main runner: {e}")
+        logger.error(f"A critical error occurred in the main runner: {e}", exc_info=True)
     finally:
         shutdown_handler(None, None)
 
 
 if __name__ == "__main__":
+    multiprocessing.set_start_method("fork")
     main()
